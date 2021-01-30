@@ -7,10 +7,45 @@ from selenium.webdriver.support.expected_conditions import presence_of_element_l
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import sys
+import mysql.connector
+
+
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="danish-khan",
+  password="12345",
+  db='reseachgate_profiles'
+)
+
+cur = mydb.cursor()
+
+
+#create table
+cur.execute("""DROP TABLE IF EXISTS Data""")
+
+cur.execute(''' CREATE TABLE IF NOT EXISTS Data
+               (Id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+                Name varchar(20),
+                Institution VARCHAR(255),
+                Department varchar(255),
+                Citations INTEGER,
+                Recommendation BIGINT(20), 
+                Total_Reads Real, 
+                Total_research_interest INTEGER, 
+                Research_items INTEGER,
+                Projects INTEGER, 
+                Questions  INTEGER,
+                Answers INTEGER, 
+                Scores INTEGER,
+                Followers INTEGER,
+                Followings INTEGER
+               )''')
+
+
 
 login_url = 'https://www.researchgate.net/login'
 base_url = "https://www.researchgate.net/institution/Islamia_College_Peshawar/department/Department_of_Computer_Science/members"
-chrome_driver_path = '/media/danish-khan/New Volume/Web_scraping/rgcrawler2/chromedriver'
+chrome_driver_path = '/home/danish-khan/scrapers/researchgate/chromedriver'
 
 chrome_options = Options()
 #chrome_options.add_argument('--headless')
@@ -39,51 +74,73 @@ with webdriver as driver:
 
     driver.get(base_url)
 
-    time.sleep(5)
+    time.sleep(10)
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     names = driver.find_elements_by_css_selector('.display-name')
+    print(len(names))
     name_selector = '.nova-e-text--size-xl.nova-e-text--color-grey-900'
     selector = '.display-name'
-    for i in range(len(names)):
-         links = WebDriverWait(driver, 10).until(
-         EC.presence_of_all_elements_located((By.CSS_SELECTOR, selector))
-         ) 
-         links[i].click()
-         name_e = WebDriverWait(driver, 10).until(
-         EC.presence_of_element_located((By.CSS_SELECTOR, name_selector))
-         )
-         details = {
-            'name' : name_e.text,
-            'institution' : driver.find_element_by_css_selector('.nova-v-institution-item__title .nova-e-link--theme-bare').text,
-            'department' : driver.find_element_by_css_selector('.nova-v-institution-item__info-section-list-item .nova-e-link--theme-bare').text, 
-            'citations' : driver.find_element_by_css_selector('.application-box-layout__item--m:nth-child(2) .nova-e-text--size-xl').text,
-            'recommendation' :   driver.find_element_by_css_selector('.application-box-layout__item--m:nth-child(3) .nova-e-text--size-xl').text,
-            'reads' : driver.find_element_by_css_selector('.application-box-layout__item--m:nth-child(4) .nova-e-text--size-xl').text,
-            'total research interest' :  driver.find_element_by_css_selector('.application-box-layout__item--m:nth-child(1) .nova-e-text--size-xl').text,
-            'research_items' : driver.find_element_by_css_selector('.application-box-layout__item--xs:nth-child(1) .nova-e-text--color-inherit').text,
-            'projects' : driver.find_element_by_css_selector('.application-box-layout__item--xs:nth-child(2) .nova-e-text--color-inherit').text,
+    #for i in range(0,1):
+    for i in range(0,len(names)):
+         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+         try:
+             links = WebDriverWait(driver, 50).until(
+             EC.presence_of_all_elements_located((By.CSS_SELECTOR, selector))
+              )
+                    
+             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+             links[i].click()
+             name_e = WebDriverWait(driver, 20).until(
+             EC.presence_of_element_located((By.CSS_SELECTOR, name_selector))
+             )
+             
+             Name = name_e.text
+             Institution = driver.find_element_by_css_selector('.nova-v-institution-item__title .nova-e-link--theme-bare').text
+             Department = driver.find_element_by_css_selector('.nova-v-institution-item__info-section-list-item .nova-e-link--theme-bare').text 
+             Citations = driver.find_element_by_css_selector('.application-box-layout__item--m:nth-child(2) .nova-e-text--size-xl').text
+             
+             Recommendation =   driver.find_element_by_css_selector('.application-box-layout__item--m:nth-child(3) .nova-e-text--size-xl').text.replace(',',''),
+             Total_Reads = driver.find_element_by_css_selector('.application-box-layout__item--m:nth-child(4) .nova-e-text--size-xl').text,         
+                
+             Total_research_interest =  driver.find_element_by_css_selector('.application-box-layout__item--m:nth-child(1) .nova-e-text--size-xl').text,
+             Research_items = driver.find_element_by_css_selector('.application-box-layout__item--xs:nth-child(1) .nova-e-text--color-inherit').text,
+             Projects = driver.find_element_by_css_selector('.application-box-layout__item--xs:nth-child(2) .nova-e-text--color-inherit').text,
 
-            'questions' : driver.find_element_by_css_selector('.application-box-layout__item--xs:nth-child(3) .nova-e-text--size-xl').text,
-
-            'answers' : driver.find_element_by_css_selector('.application-box-layout__item--xs:nth-child(4) .nova-e-text--size-xl').text,
-        
-            'scores' : driver.find_element_by_css_selector('.profile-header-details-meta-items .nova-e-list__item:nth-child(1)').text,
+             Questions = driver.find_element_by_css_selector('.application-box-layout__item--xs:nth-child(3) .nova-e-text--size-xl').text,
+             Answers = driver.find_element_by_css_selector('.application-box-layout__item--xs:nth-child(4) .nova-e-text--size-xl').text,
+            
+             Scores = driver.find_element_by_css_selector('.profile-header-details-meta-items .nova-e-list__item:nth-child(1)').text,
+                         
+             Followers = driver.find_element_by_xpath('//div[@class="nova-e-text nova-e-text--size-m nova-e-text--family-sans-serif nova-e-text--spacing-none nova-e-text--color-inherit"]/b').text[11:13]
                      
-            'followers' :  driver.find_element_by_css_selector('.nova-o-stack__item+ .nova-o-stack__item b').text,
-                 
-            'followings' : driver.find_element_by_css_selector('.nova-o-stack--show-divider .nova-o-stack__item:nth-child(1) .nova-o-stack__item b').text
+             Followings = driver.find_element_by_xpath('//div[@class="nova-o-stack nova-o-stack--gutter-xxl nova-o-stack--spacing-xxs nova-o-stack--show-divider"]/div[2]/div/div/div/div/div/b').text[11:13]
 
 
+             time.sleep(5)
+         
+         except Exception as e:
+            print('Time out error')   
 
-                    }
+time.sleep(10)
 
-         results.append(details)
+cur.execute('INSERT INTO DATA(Name,Institution,Department,Citations,Recommendation , Total_Reads , Total_research_interest , Research_items , Projects, Questions , Answers , Scores , Followers, Followings) VALUES("%s","%s","%s","%s")' % (Name,Institution,Department,citations,Recommendation , Total_Reads , Total_research_interest , Research_items , Projects, Questions , Answers , Scores , Followers, Followings ) )
+#driver.close()
+mydb.commit()
+print('complete.')
 
-    
-         driver.back()
- 
+#cur.execute(SELECT * FROM DATA)
+#results2 = cur.fetchall()
+#print(results2)
+#data = pd.read_sql_query("SELECT * FROM Data",conn)
+#print(data)
+mydb.close()
+time.sleep(10)
+
 driver.close()
 
-print(results)
+
+
+
 
 
 
