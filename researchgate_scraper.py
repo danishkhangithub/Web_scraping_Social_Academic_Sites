@@ -12,8 +12,8 @@ import mysql.connector
 #connection to database
 mydb = mysql.connector.connect(
   host="localhost",
-  user="danish-khan",
-  password="12345",
+  user="abc", # your username 
+  password="12345", # your password
   db='reseachgate_profiles'
 )
 
@@ -55,8 +55,8 @@ webdriver = webdriver.Chrome(
 )
 
 # default login credential and search query
-username = 'danishkhankd237@gmail.com'
-password = 'danish3.16khan'
+username = 'your username'
+password = 'password'
 search_query = "Islamia college Peshawar"
 results = []
 
