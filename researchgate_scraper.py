@@ -9,7 +9,7 @@ import time
 import sys
 import mysql.connector
 
-
+#connection to database
 mydb = mysql.connector.connect(
   host="localhost",
   user="danish-khan",
@@ -80,7 +80,7 @@ with webdriver as driver:
     print(len(names))
     name_selector = '.nova-e-text--size-xl.nova-e-text--color-grey-900'
     selector = '.display-name'
-    #for i in range(0,1):
+    
     for i in range(0,len(names)):
          driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
          try:
@@ -122,17 +122,13 @@ with webdriver as driver:
             print('Time out error')   
 
 time.sleep(10)
-
+#insert the scraped data into database.
 cur.execute('INSERT INTO DATA(Name,Institution,Department,Citations,Recommendation , Total_Reads , Total_research_interest , Research_items , Projects, Questions , Answers , Scores , Followers, Followings) VALUES("%s","%s","%s","%s")' % (Name,Institution,Department,citations,Recommendation , Total_Reads , Total_research_interest , Research_items , Projects, Questions , Answers , Scores , Followers, Followings ) )
 #driver.close()
 mydb.commit()
 print('complete.')
 
-#cur.execute(SELECT * FROM DATA)
-#results2 = cur.fetchall()
-#print(results2)
-#data = pd.read_sql_query("SELECT * FROM Data",conn)
-#print(data)
+
 mydb.close()
 time.sleep(10)
 
